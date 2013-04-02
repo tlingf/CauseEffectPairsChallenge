@@ -5,6 +5,9 @@ import os
 import pandas as pd
 import pickle
 
+skip = range(10,7832)
+skip = []
+
 def get_paths():
     paths = json.loads(open("SETTINGS.json").read())
     for key in paths:
@@ -18,7 +21,7 @@ def parse_dataframe(df):
 
 def read_train_pairs():
     train_path = get_paths()["train_pairs_path"]
-    return parse_dataframe(pd.read_csv(train_path, index_col="SampleID"))
+    return parse_dataframe(pd.read_csv(train_path, index_col="SampleID", skiprows = skip))
 
 def read_train_target():
     path = get_paths()["train_target_path"]
@@ -28,7 +31,7 @@ def read_train_target():
 
 def read_train_info():
     path = get_paths()["train_info_path"]
-    return pd.read_csv(path, index_col="SampleID")
+    return pd.read_csv(path, index_col="SampleID", skiprows = skip)
 
 def read_valid_pairs():
     valid_path = get_paths()["valid_pairs_path"]
@@ -44,6 +47,7 @@ def read_solution():
 
 def save_model(model):
     out_path = get_paths()["model_path"]
+
     pickle.dump(model, open(out_path, "w"))
 
 def load_model():
@@ -54,10 +58,11 @@ def read_submission():
     submission_path = get_paths()["submission_path"]
     return pd.read_csv(submission_path, index_col="SampleID")
 
-def write_submission(predictions):
-    submission_path = get_paths()["submission_path"]
+def write_submission(predictions, fn, run = 'predict'):
+    submission_path = get_paths()["submission_path"]  + fn + ".csv"
     writer = csv.writer(open(submission_path, "w"), lineterminator="\n")
-    valid = read_valid_pairs()
+    if run == 'train': valid = read_train_pairs()
+    else: valid = read_valid_pairs()
     rows = [x for x in zip(valid.index, predictions)]
     writer.writerow(("SampleID", "Target"))
     writer.writerows(rows)

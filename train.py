@@ -12,19 +12,24 @@ def feature_extractor():
                 ('B: Number of Unique Samples', 'B', f.SimpleTransform(transformer=f.count_unique)),
                 ('A: Normalized Entropy', 'A', f.SimpleTransform(transformer=f.normalized_entropy)),
                 ('B: Normalized Entropy', 'B', f.SimpleTransform(transformer=f.normalized_entropy)),
+                # uses scipy.special.psi
+                #  y=psi(z) is the derivative of the logarithm of the gamma function evaluated at z (also called the digamma function).
                 ('Pearson R', ['A','B'], f.MultiColumnTransform(f.correlation)),
+                # scipy.stats.stats.pearsonr
                 ('Pearson R Magnitude', ['A','B'], f.MultiColumnTransform(f.correlation_magnitude)),
+                # abs(correlation(x,y))
                 ('Entropy Difference', ['A','B'], f.MultiColumnTransform(f.entropy_difference))]
+                # normalized_entropy(x) - normalized_entropy(y)
     combined = f.FeatureMapper(features)
     return combined
 
 def get_pipeline():
     features = feature_extractor()
     steps = [("extract_features", features),
-             ("classify", RandomForestRegressor(n_estimators=50, 
+             ("classify", RandomForestRegressor(n_estimators=75, # sample code is 50
                                                 verbose=2,
-                                                n_jobs=1,
-                                                min_samples_split=10,
+                                                n_jobs=-1,
+                                                min_samples_split=5,  # sample code is 10
                                                 random_state=1))]
     return Pipeline(steps)
 

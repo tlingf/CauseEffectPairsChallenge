@@ -1,6 +1,9 @@
 import data_io
 import numpy as np
 import pickle
+import sys
+
+run = sys.argv[1]
 
 def historic():
     print("Calculating correlations")
@@ -30,4 +33,7 @@ def main():
     data_io.write_submission(predictions)
 
 if __name__=="__main__":
-    main()
+    if run == 'describe':
+        print classifier.steps[1][1].feature_importances_
+    else:
+        main()

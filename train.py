@@ -30,7 +30,9 @@ def get_pipeline():
                                                 verbose=2,
                                                 n_jobs=-1,
                                                 min_samples_split=5,  # sample code is 10
-                                                random_state=1))]
+                                                random_state=1,
+                                                compute_importances=True,
+                                                oob_score=True))]
     return Pipeline(steps)
 
 def main():
@@ -41,6 +43,14 @@ def main():
     print("Extracting features and training model")
     classifier = get_pipeline()
     classifier.fit(train, target.Target)
+    
+    features = [x[0] for x in classifier.steps[0][1].features ]
+
+    imp = sorted(zip(features, classifier.steps[1][1].feature_importances_), key=lambda tup: tup[1], reverse=True)
+    for fea in imp:
+        print fea[0], fea[1]
+
+    print 'oob score:', classifier.steps[1][1].oob_score_
 
     print("Saving the classifier")
     data_io.save_model(classifier)

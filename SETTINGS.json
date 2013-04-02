@@ -5,5 +5,5 @@
     "valid_pairs_path": "CauseEffectPairs/Competition/CEdata_valid_pairs.csv",
     "valid_info_path": "CauseEffectPairs/Competition/CEdata_valid_publicinfo.csv",
     "model_path": "CauseEffectPairs/Models/basic_python_benchmark.pickle",
-    "submission_path": "CauseEffectPairs/Submissions/basic_python_benchmark.csv"
+    "submission_path": "CauseEffectPairs/Submissions/"
 }

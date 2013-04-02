@@ -2,8 +2,9 @@ import data_io
 import numpy as np
 import pickle
 import sys
+import pandas as pd
 
-run = sys.argv[1]
+fn  = sys.argv[1]
 
 def historic():
     print("Calculating correlations")
@@ -21,7 +22,13 @@ def historic():
 def main():
     print("Reading the valid pairs") 
     valid = data_io.read_valid_pairs()
+    valid_info = data_io.read_valid_info()
 
+
+    valid[['A type','B type']] = valid[['A type','B type']].replace('Binary',1)
+    valid[['A type','B type']] = valid[['A type','B type']].replace('Categorical',1)
+    valid[['A type','B type']] = valid[['A type','B type']].replace('Numerical',0)
+            
     print("Loading the classifier")
     classifier = data_io.load_model()
 
@@ -30,10 +37,7 @@ def main():
     predictions = predictions.flatten()
 
     print("Writing predictions to file")
-    data_io.write_submission(predictions)
+    data_io.write_submission(predictions, fn)
 
 if __name__=="__main__":
-    if run == 'describe':
-        print classifier.steps[1][1].feature_importances_
-    else:
-        main()
+    main()

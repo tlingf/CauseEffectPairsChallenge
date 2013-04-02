@@ -65,6 +65,9 @@ def correlation(x, y):
 def correlation_magnitude(x, y):
     return abs(correlation(x, y))
 
+def ratio_unique(x,y):
+    return float(len(set(x)))/float(len(set(y)))
+
 class SimpleTransform(BaseEstimator):
     def __init__(self, transformer=identity):
         self.transformer = transformer
@@ -76,7 +79,12 @@ class SimpleTransform(BaseEstimator):
         return self.transform(X)
 
     def transform(self, X, y=None):
+        print X
+        
+        print "Transformed"
+        print  np.array([self.transformer(x) for x in X], ndmin=2).T
         return np.array([self.transformer(x) for x in X], ndmin=2).T
+
 
 class MultiColumnTransform(BaseEstimator):
     def __init__(self, transformer):

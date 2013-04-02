@@ -41,7 +41,7 @@ def identity(x):
     return x
 
 def count_unique(x):
-    return len(set(x))
+    return np.log(len(set(x)))
 
 def normalized_entropy(x):
     x = (x - np.mean(x)) / np.std(x)
@@ -54,7 +54,7 @@ def normalized_entropy(x):
             hx += np.log(np.abs(delta));
     hx = hx / (len(x) - 1) + psi(len(x)) - psi(1);
 
-    return hx
+    return np.log(hx)
 
 def entropy_difference(x, y):
     return normalized_entropy(x) - normalized_entropy(y)

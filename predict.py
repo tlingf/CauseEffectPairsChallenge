@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 import sys
 import pandas as pd
+import train
 
 fn  = sys.argv[1]
 
@@ -23,12 +24,9 @@ def main():
     print("Reading the valid pairs") 
     valid = data_io.read_valid_pairs()
     valid_info = data_io.read_valid_info()
+    valid = pd.concat([valid, valid_info],axis =1) 
+    valid = train.get_types(valid)
 
-
-    valid[['A type','B type']] = valid[['A type','B type']].replace('Binary',1)
-    valid[['A type','B type']] = valid[['A type','B type']].replace('Categorical',1)
-    valid[['A type','B type']] = valid[['A type','B type']].replace('Numerical',0)
-            
     print("Loading the classifier")
     classifier = data_io.load_model()
 

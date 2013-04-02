@@ -2,7 +2,7 @@ import data_io
 import features as f
 import numpy as np
 import pickle
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.pipeline import Pipeline
 import pandas as pd
@@ -13,7 +13,8 @@ def feature_extractor():
     features = [
                 ('A type', 'A type', f.SimpleTransform()),
                 ('B type', 'B type', f.SimpleTransform()),
-                ('Bin-Bin', 'Bin-Bin', f.SimpleTransform()),
+                ('Num-Num', 'Num-Num', f.SimpleTransform()),
+                # TO DO : Add a binarize function here for types
                 ('Number of Samples', 'A', f.SimpleTransform(transformer=len)),
 #                ('Ratio of Unique Samples', ['A','B'], f.MultiColumnTransform(f.ratio_unique)),
                 ('A: Number of Unique Samples', 'A', f.SimpleTransform(transformer=f.count_unique)),
@@ -23,7 +24,6 @@ def feature_extractor():
                 # uses scipy.special.psi
                 #  y=psi(z) is the derivative of the logarithm of the gamma function evaluated at z (also called the digamma function).
                 ('Pearson R', ['A','B'], f.MultiColumnTransform(f.correlation)),
-                # scipy.stats.stats.pearsonr
                 ('Pearson R Magnitude', ['A','B'], f.MultiColumnTransform(f.correlation_magnitude)),
                 # abs(correlation(x,y))
                 ('Entropy Difference', ['A','B'], f.MultiColumnTransform(f.entropy_difference))]
@@ -35,16 +35,17 @@ def get_pipeline():
     features = feature_extractor()
 
     steps = [("extract_features", features),
-#             ("classify",GradientBoostingRegressor(n_estimators=75,
-#                                                random_state = 1,
-#                                                subsample = .8))] 
-             ("classify", RandomForestRegressor(n_estimators=75, # sample code is 50
-                                                verbose=0,
-                                                n_jobs=-1,
-                                                min_samples_split=5,  # sample code is 10
-                                                random_state=1,
-                                                compute_importances=True,
-                                                oob_score=True))]
+             ("classify",GradientBoostingRegressor(n_estimators=75,
+                                                random_state = 1,
+                                                subsample = .8,
+                                                max_depth = 6))] 
+#             ("classify", RandomForestRegressor(n_estimators=75, # sample code is 50
+#                                                verbose=0,
+#                                                n_jobs=-1,
+#                                                min_samples_split=5,  # sample code is 10
+#                                                random_state=1,
+#                                                compute_importances=True,
+#                                                oob_score=True))]
     return Pipeline(steps)
 
 
@@ -63,12 +64,18 @@ def get_types(data):
     data[['A type','B type']] = data[['A type','B type']].replace('Categorical',1)
     data[['A type','B type']] = data[['A type','B type']].replace('Numerical',0)
     return data
+def combine_types(data, data_info):
+    data = pd.concat([data,data_info],axis = 1)
+    data['types'] = [x + y for x in data['A type'] for y in data['B type']]
+    return data
+
 def main():
     t1 = time()
     print("Reading in the training data")
     train = data_io.read_train_pairs()
     train_info = data_io.read_train_info()
-    train = pd.concat([train,train_info], axis = 1)
+    train = combine_types(train, train_info)
+
     #make function later
     train = get_types(train)
     target = data_io.read_train_target()
@@ -90,7 +97,8 @@ def main():
     oob_score =  classifier.steps[1][1].oob_score_
     print "oob score:", oob_score
     logger = open("run_log.txt","a")
-    logger.write("\n" +str( oob_score) + "\n")
+    if len(oob_score) == 1: logger.write("\n" +str( oob_score) + "\n")
+    else:logger.write("\n" + str(oob_score[0]) + "\n")
 
     print("Saving the classifier")
     data_io.save_model(classifier)

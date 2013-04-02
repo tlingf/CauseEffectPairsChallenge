@@ -5,15 +5,17 @@ import pickle
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelBinarizer
 import pandas as pd
 import csv
 from time import time
 
 def feature_extractor():
     features = [
-                ('A type', 'A type', f.SimpleTransform()),
-                ('B type', 'B type', f.SimpleTransform()),
-                ('Num-Num', 'Num-Num', f.SimpleTransform()),
+#                ('types','types', LabelBinarizer()),
+                #('A type', 'A type', f.SimpleTransform()),
+                #('B type', 'B type', f.SimpleTransform()),
+                #('Num-Num', 'Num-Num', f.SimpleTransform()),
                 # TO DO : Add a binarize function here for types
                 ('Number of Samples', 'A', f.SimpleTransform(transformer=len)),
 #                ('Ratio of Unique Samples', ['A','B'], f.MultiColumnTransform(f.ratio_unique)),
@@ -53,12 +55,6 @@ def get_types(data):
     data['Bin-Bin'] = (data['A type']=='Binary')&(data['B type']=='Binary')
     data['Num-Num'] = (data['A type']=='Numerical')&(data['B type']=='Numerical')
     data['Cat-Cat'] = (data['A type']=='Categorical')&(data['B type']=='Categorical')
-    data['Cat-Bin'] = ((data['A type']=='Categorical')&(data['B type']=='Binary')) | \
-                    ((data['B type']=='Categorical')&(data['A type']=='Binary'))
-    data['Cat-Num'] = ((data['A type']=='Categorical')&(data['B type']=='Numerical')) | \
-                     ((data['B type']=='Categorical')&(data['A type']=='Numerical'))
-    data['Num-Bin'] = ((data['A type']=='Numerical')&(data['B type']=='Binary')) | \
-                     ((data['B type']=='Numerical')&(data['A type']=='Binary'))
 
     data[['A type','B type']] = data[['A type','B type']].replace('Binary',1)
     data[['A type','B type']] = data[['A type','B type']].replace('Categorical',1)
@@ -66,7 +62,11 @@ def get_types(data):
     return data
 def combine_types(data, data_info):
     data = pd.concat([data,data_info],axis = 1)
-    data['types'] = [x + y for x in data['A type'] for y in data['B type']]
+    types = []
+    for a,b in zip(data['A type'], data['B type']):
+        types.append(a + b)
+    data['types'] = types
+    #data['types'] = [x + y for x in data['A type'] for y in data['B type']]
     return data
 
 def main():
